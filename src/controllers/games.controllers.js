@@ -2,7 +2,8 @@ import connection from "../database/db.js";
 
 export async function findGames(req, res) {
   try {
-    const allGames = await connection.query("SELECT * FROM games");
+    const allGames = await connection.query('SELECT *, categories.name as "categoryName" from categories INNER JOIN games ON "categoryId" = categories.id');
+
     res.send(allGames.rows);
   } catch (err) {
     console.log(err);
