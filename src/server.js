@@ -8,6 +8,6 @@ app.use(express.json());
 
 const PORT = 4000;
 
-app.listen(() => {
+app.listen(PORT, () => {
   console.log(`Server running on PORT ${PORT}`);
 });
