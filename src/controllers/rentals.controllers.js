@@ -5,25 +5,35 @@ export async function findRentals(req, res) {
   const gameId = Number(req.query.gameId);
 
   try {
-    const selectRental = await connection.query("SELECT * FROM rentals");
-    const allCustomers = await connection.query("SELECT id, name FROM customers");
-    const allGames = await connection.query(
-      'SELECT games.id, games.name, categories.id as "categoryId", categories.name as "categoryName" FROM games INNER JOIN categories ON "categoryId" = categories.id'
-    );
-
-    const hashCustomers = {};
-    allCustomers.rows.forEach((c) => (hashCustomers[c.id] = c));
-
-    const hashGames = {};
-    allGames.rows.forEach((g) => (hashGames[g.id] = g));
+    const selectRental = await connection.query(`
+      SELECT rentals.*, 
+		    customers.name as "customerName", 
+		    games.name as "gameName", games."categoryId" as "categoryId", 
+		    categories.name as "categoryName"
+	    FROM rentals
+		    JOIN customers ON "customerId" = customers.id
+		    JOIN games ON "gameId" = games.id
+		    JOIN categories ON games."categoryId" = categories.id;`);
 
     const allRentals = selectRental.rows;
 
     allRentals.forEach((rental) => {
-      const idCustomer = rental.customerId;
-      const idGame = rental.gameId;
-      rental.customer = hashCustomers[idCustomer];
-      rental.game = hashGames[idGame];
+      rental.customer = {
+        id: rental.customerId,
+        name: rental.customerName,
+      };
+
+      rental.game = {
+        id: rental.gameId,
+        name: rental.gameName,
+        categoryId: rental.categoryId,
+        categoryName: rental.categoryName,
+      };
+
+      delete rental.customerName;
+      delete rental.gameName;
+      delete rental.categoryId;
+      delete rental.categoryName;
     });
 
     if (customerId) {
