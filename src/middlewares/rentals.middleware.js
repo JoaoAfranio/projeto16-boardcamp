@@ -14,7 +14,7 @@ export async function rentalSchemaValidation(req, res, next) {
   const existsGame = await connection.query("SELECT * FROM games WHERE id= $1", [rental.gameId]);
   if (existsGame.rowCount === 0) return res.sendStatus(400);
 
-  const rentedGames = await connection.query('SELECT * FROM rentals WHERE "gameId"= $1', [rental.gameId]);
+  const rentedGames = await connection.query('SELECT * FROM rentals WHERE "gameId"= $1 AND "returnDate" IS NULL', [rental.gameId]);
 
   const game = existsGame.rows[0];
 
