@@ -24,3 +24,17 @@ export async function rentalSchemaValidation(req, res, next) {
 
   next();
 }
+
+export async function deleteRentalValidation(req, res, next) {
+  const id = req.params.id;
+
+  const existsRental = await connection.query('SELECT * FROM rentals where "gameId"= $1', [id]);
+
+  if (existsRental.rowCount === 0) return res.sendStatus(404);
+
+  const rental = existsRental.rows[0];
+
+  if (rental.returnDate === null) return res.sendStatus(400);
+
+  next();
+}
