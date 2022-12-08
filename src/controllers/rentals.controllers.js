@@ -78,3 +78,29 @@ export async function deleteRental(req, res) {
   }
   res.sendStatus(200);
 }
+
+export async function returnRental(req, res) {
+  const id = req.params.id;
+  const rental = res.locals.rental;
+
+  const date = new Date();
+  const returnDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+
+  const rentDate = new Date(rental.rentDate);
+  rentDate.setDate(rentDate.getDate() + rental.daysRented);
+
+  const diffTime = date.getTime() - rentDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 3600 * 24));
+
+  let delayFee = 0;
+
+  if (diffDays > 0) delayFee = diffDays * rental.originalPrice;
+
+  try {
+    await connection.query('UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3', [returnDate, delayFee, id]);
+    res.sendStatus(200);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+}
