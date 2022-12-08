@@ -1,6 +1,9 @@
 import connection from "../database/db.js";
 
 export async function findRentals(req, res) {
+  const customerId = Number(req.query.customerId);
+  const gameId = Number(req.query.gameId);
+
   try {
     const selectRental = await connection.query("SELECT * FROM rentals");
     const allCustomers = await connection.query("SELECT id, name FROM customers");
@@ -15,12 +18,23 @@ export async function findRentals(req, res) {
     allGames.rows.forEach((g) => (hashGames[g.id] = g));
 
     const allRentals = selectRental.rows;
+
     allRentals.forEach((rental) => {
       const idCustomer = rental.customerId;
       const idGame = rental.gameId;
       rental.customer = hashCustomers[idCustomer];
       rental.game = hashGames[idGame];
     });
+
+    if (customerId) {
+      const filterByCustomer = allRentals.filter((rental) => rental.customerId === customerId);
+      return res.send(filterByCustomer);
+    }
+
+    if (gameId) {
+      const filterByGame = allRentals.filter((rental) => rental.game.id === gameId);
+      return res.send(filterByGame);
+    }
 
     res.send(allRentals);
   } catch (err) {
