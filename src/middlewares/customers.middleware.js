@@ -22,12 +22,8 @@ export async function updateCustomerValidation(req, res, next) {
   const id = Number(req.params.id);
   const customer = req.body;
 
-  const cpfInUse = await connection.query("SELECT * FROM customers WHERE cpf= $1", [customer.cpf]);
-  const personCpf = cpfInUse.rows[0];
-
-  if (!personCpf) return next();
-
-  if (personCpf.id !== id) return res.sendStatus(409);
+  const cpfInUse = await connection.query("SELECT * FROM customers WHERE cpf= $1 AND id != $2", [customer.cpf, id]);
+  if (cpfInUse.rowCount !== 0) return res.sendStatus(409);
 
   next();
 }
