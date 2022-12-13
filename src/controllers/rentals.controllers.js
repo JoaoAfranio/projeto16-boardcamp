@@ -6,35 +6,15 @@ export async function findRentals(req, res) {
 
   try {
     const selectRental = await connection.query(`
-      SELECT rentals.*, 
-		    customers.name as "customerName", 
-		    games.name as "gameName", games."categoryId" as "categoryId", 
-		    categories.name as "categoryName"
+      SELECT rentals.*,
+        json_build_object('id', customers.id, 'name', customers.name) as customer, 
+        json_build_object('id',  games.id, 'name', games.name, 'categoryId', games."categoryId", 'categoryName', categories.name) as game
 	    FROM rentals
 		    JOIN customers ON "customerId" = customers.id
 		    JOIN games ON "gameId" = games.id
 		    JOIN categories ON games."categoryId" = categories.id;`);
 
     const allRentals = selectRental.rows;
-
-    allRentals.forEach((rental) => {
-      rental.customer = {
-        id: rental.customerId,
-        name: rental.customerName,
-      };
-
-      rental.game = {
-        id: rental.gameId,
-        name: rental.gameName,
-        categoryId: rental.categoryId,
-        categoryName: rental.categoryName,
-      };
-
-      delete rental.customerName;
-      delete rental.gameName;
-      delete rental.categoryId;
-      delete rental.categoryName;
-    });
 
     if (customerId) {
       const filterByCustomer = allRentals.filter((rental) => rental.customerId === customerId);
